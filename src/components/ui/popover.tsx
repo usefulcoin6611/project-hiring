@@ -9,9 +9,30 @@ function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />
 }
 
-function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
+interface PopoverTriggerProps extends PopoverPrimitive.Trigger.Props {
+  asChild?: boolean;
 }
+
+const PopoverTrigger = React.forwardRef<HTMLButtonElement, PopoverTriggerProps>(
+  ({ asChild, ...props }, ref) => {
+    if (asChild && React.isValidElement(props.children)) {
+      const child = React.Children.only(props.children) as React.ReactElement<any>;
+      return (
+        <PopoverPrimitive.Trigger
+          ref={ref}
+          render={React.cloneElement(child, {
+            className: cn(props.className, child.props.className),
+            ref: (child as any).ref,
+          })}
+          {...props}
+          children={undefined}
+        />
+      );
+    }
+    return <PopoverPrimitive.Trigger ref={ref} data-slot="popover-trigger" {...props} />;
+  }
+);
+PopoverTrigger.displayName = "PopoverTrigger";
 
 function PopoverContent({
   className,
@@ -19,14 +40,24 @@ function PopoverContent({
   alignOffset = 0,
   side = "bottom",
   sideOffset = 4,
+  container,
   ...props
 }: PopoverPrimitive.Popup.Props &
   Pick<
     PopoverPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset"
-  >) {
+  > & {
+    /**
+     * Target DOM untuk portal. Default-nya `document.body`.
+     * Saat popover dipakai di dalam modal (mis. Radix Dialog), set ini ke
+     * elemen Dialog supaya focus-trap & deteksi "klik di luar" milik Dialog
+     * menganggap popover sebagai bagian di dalamnya — mencegah Dialog ikut
+     * tertutup & rebutan fokus dengan kalender.
+     */
+    container?: HTMLElement | null;
+  }) {
   return (
-    <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Portal {...(container ? { container } : {})}>
       <PopoverPrimitive.Positioner
         align={align}
         alignOffset={alignOffset}
