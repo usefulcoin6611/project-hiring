@@ -38,3 +38,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# custom strategy & analysis docs
+/strat/
+audit-kepatuhan-kasbon.md
+strategi-sukses-kasbon.md
+analisis-task-kasbon.md
+/implementation_plan.md
+/.vscode/
+
+
